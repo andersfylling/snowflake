@@ -23,7 +23,7 @@ If you're creating an API that sends JSON to a javascript client, or any other l
 import "github.com/andersfylling/snowflake"
 
 type DiscordRole struct {
-	*snowflake.JSON
+	*snowflake.JSON           `json:"snowflake"`
 	Name        string       `json:"name"`
 	Managed     bool         `json:"managed"`
 	Mentionable bool         `json:"mentionable"`
@@ -37,9 +37,11 @@ type DiscordRole struct {
 This adds two fields: `ID` and `IDStr`. Where the first is of a snowflake.ID type, and the second is a string. This creates the JSON format (IDs only. Where the dots represents the remaining DiscordRole fields):
 ```json
 {
-  "id": 74895735435643,
-  "id_str": "74895735435643",
-  ...
+	snowflake: {
+  		"id": 74895735435643,
+  		"id_str": "74895735435643",
+  		...
+	}
 }
 ```
 
