@@ -23,7 +23,7 @@ If you're creating an API that sends JSON to a javascript client, or any other l
 import "github.com/andersfylling/snowflake"
 
 type DiscordRole struct {
-  snowflake.JSON
+	snowflake.JSON
 	Name        string       `json:"name"`
 	Managed     bool         `json:"managed"`
 	Mentionable bool         `json:"mentionable"`
