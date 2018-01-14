@@ -37,7 +37,7 @@ type DiscordRole struct {
 This adds two fields: `ID` and `IDStr`. Where the first is of a snowflake.ID type, and the second is a string. This creates the JSON format (IDs only. Where the dots represents the remaining DiscordRole fields):
 ```json
 {
-	snowflake: {
+	"snowflake": {
   		"id": 74895735435643,
   		"id_str": "74895735435643",
   		...
