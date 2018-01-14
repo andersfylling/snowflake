@@ -40,8 +40,8 @@ This adds two fields: `ID` and `IDStr`. Where the first is of a snowflake.ID typ
 	"snowflake": {
   		"id": 74895735435643,
   		"id_str": "74895735435643",
-  		...
-	}
+	},
+	...
 }
 ```
 
