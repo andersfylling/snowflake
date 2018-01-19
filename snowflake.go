@@ -58,6 +58,7 @@ func (s ID) HexPrettyString() string {
 func (s ID) MarshalBinary() (data []byte, err error) {
 	return []byte(strconv.FormatUint(uint64(s), 2)), nil
 }
+
 func (s *ID) UnmarshalBinary(text []byte) (err error) {
 	id, err := strconv.ParseUint(string(text), 2, 64)
 	if err != nil {
