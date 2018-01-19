@@ -1,6 +1,7 @@
 package snowflake
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -59,19 +60,39 @@ func TestBinaryMarshalling(t *testing.T) {
 }
 
 func TestTextMarshalling(t *testing.T) {
-	id := NewID(4598345)
+	target := "80351110224678912"
+
+	id := NewID(4534)
+	err := id.UnmarshalText([]byte(target))
+	if err != nil {
+		t.Error(err)
+	}
+
 	b, err := id.MarshalText()
 	if err != nil {
 		t.Error(err)
 	}
 
-	id2 := NewID(4534)
-	err = id2.UnmarshalText(b)
+	if string(b) != target {
+		t.Errorf("Value differs. Got %s, wants %s", string(b), target)
+	}
+}
+
+func TestJSONMarshalling(t *testing.T) {
+	target := "\"80351110224678912\""
+
+	id := NewID(0)
+	err := json.Unmarshal([]byte(target), &id)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if id2 != id {
-		t.Errorf("Value differs. Got %d, wants %d", id2, id)
+	b, err := json.Marshal(id)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if string(b) != target {
+		t.Errorf("Incorrect snowflake value. Got %s, wants %s", string(b), target)
 	}
 }
