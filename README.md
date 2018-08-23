@@ -1,4 +1,10 @@
 # snowflake for Discord
+[![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com)
+
+## Health
+| Branch       | Build status  | Code climate | Go Report Card | Codacy |
+| ------------ |:-------------:|:---------------:|:-------------:|:----------------:|
+| master       | [![CircleCI](https://circleci.com/gh/andersfylling/snowflake/tree/master.svg?style=shield)](https://circleci.com/gh/andersfylling/snowflake/tree/master) | [![Maintainability](https://api.codeclimate.com/v1/badges/5fe3da7a87c3185b5f33/maintainability)](https://codeclimate.com/github/andersfylling/snowflake/maintainability) | [![Go Report Card](https://goreportcard.com/badge/github.com/andersfylling/snowflake)](https://goreportcard.com/report/github.com/andersfylling/snowflake) | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e33fb047672644a8900bd20fdbc234be)](https://www.codacy.com/project/andersfylling/snowflake/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=andersfylling/snowflake&amp;utm_campaign=Badge_Grade_Dashboard) |
 
 Does not hold functionality to connect a snowflake service, but rather parsing the snowflakes for Discord only(!).
 
