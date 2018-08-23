@@ -2,7 +2,7 @@ package snowflake
 
 import "testing"
 
-func TestParseID(t *testing.T) {
+func TestParseSnowflakeString(t *testing.T) {
 	// test panic
 	defer func() {
 		if r := recover(); r != nil {
@@ -11,12 +11,12 @@ func TestParseID(t *testing.T) {
 	}()
 
 	id := "435639843545"
-	if ParseID(id).String() != id {
-		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseID(id).String())
+	if ParseSnowflakeString(id).String() != id {
+		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseSnowflakeString(id).String())
 	}
 }
 
-func TestParseIDWithPanicTriggerLetters(t *testing.T) {
+func TestParseSnowflakeStringWithPanicTriggerLetters(t *testing.T) {
 	// test panic
 	defer func() {
 		if r := recover(); r == nil {
@@ -25,12 +25,12 @@ func TestParseIDWithPanicTriggerLetters(t *testing.T) {
 	}()
 
 	id := "435639sd843545gf453s"
-	if ParseID(id).String() != id {
-		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseID(id).String())
+	if ParseSnowflakeString(id).String() != id {
+		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseSnowflakeString(id).String())
 	}
 }
 
-func TestParseIDWithPanicTriggerOverflow(t *testing.T) {
+func TestParseSnowflakeStringWithPanicTriggerOverflow(t *testing.T) {
 	// test panic
 	defer func() {
 		if r := recover(); r == nil {
@@ -39,7 +39,7 @@ func TestParseIDWithPanicTriggerOverflow(t *testing.T) {
 	}()
 
 	id := "184467440737095516151" // string(uint64(0) - 1) + "1"
-	if ParseID(id).String() != id {
-		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseID(id).String())
+	if ParseSnowflakeString(id).String() != id {
+		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseSnowflakeString(id).String())
 	}
 }

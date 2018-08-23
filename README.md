@@ -1,14 +1,14 @@
-# snowflake
+# snowflake for Discord
 
-Does not hold functionality to connect a snowflake service, but rather dealing with the snowflake ID itself.
+Does not hold functionality to connect a snowflake service, but rather parsing the snowflakes for Discord only(!).
 
 Usage:
 
 ```go
-import "github.com/andersfylling/snowflake"
+import . "github.com/andersfylling/snowflake"
 
 type DiscordRole struct {
-    ID          snowflake.ID `json:"id"`
+    ID          Snowflake    `json:"id"`
     Name        string       `json:"name"`
     Managed     bool         `json:"managed"`
     Mentionable bool         `json:"mentionable"`
@@ -22,10 +22,10 @@ type DiscordRole struct {
 If you're creating an API that sends JSON to a multiple different language clients, some might not be able to process uint64, such as javascript. To support both uint64 and string use the JSON struct included:
 
 ```go
-import "github.com/andersfylling/snowflake"
+import . "github.com/andersfylling/snowflake"
 
 type DiscordRole struct {
-    *snowflake.JSON          `json:"snowflake"`
+    *SnowflakeJSON           `json:"snowflake"`
     Name        string       `json:"name"`
     Managed     bool         `json:"managed"`
     Mentionable bool         `json:"mentionable"`
@@ -51,10 +51,10 @@ This adds two fields: `ID` and `IDStr`. Where the first is of a snowflake.ID(uin
 Now an alternative is to send only the string version by adding `,string` to the json tag. Which I would recommend instead:
 
 ```go
-import "github.com/andersfylling/snowflake"
+import . "github.com/andersfylling/snowflake"
 
 type DiscordRole struct {
-    ID          snowflake.ID `json:"id,string"`
+    ID          Snowflake    `json:"id,string"`
     Name        string       `json:"name"`
     Managed     bool         `json:"managed"`
     Mentionable bool         `json:"mentionable"`
@@ -66,3 +66,5 @@ type DiscordRole struct {
 ```
 
 This does fulfill the twitter snowflake use case described here: <https://developer.twitter.com/en/docs/basics/twitter-ids>
+
+Remember that Discord has a different epoch. So when using the Date function, this will only function for Discord applications.

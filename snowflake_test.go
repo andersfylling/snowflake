@@ -8,7 +8,7 @@ import (
 func TestString(t *testing.T) {
 	var b []byte
 	var err error
-	id := NewID(uint64(435834986943))
+	id := NewSnowflake(uint64(435834986943))
 	if id.String() != "435834986943" {
 		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
 	}
@@ -35,20 +35,20 @@ func TestString(t *testing.T) {
 }
 
 func TestEmpty(t *testing.T) {
-	id := NewID(0)
+	id := NewSnowflake(0)
 	if !id.Empty() {
 		t.Errorf("Expects ID to be viewed as empty when value is 0")
 	}
 }
 
 func TestBinaryMarshalling(t *testing.T) {
-	id := NewID(4598345)
+	id := NewSnowflake(4598345)
 	b, err := id.MarshalBinary()
 	if err != nil {
 		t.Error(err)
 	}
 
-	id2 := NewID(4534)
+	id2 := NewSnowflake(4534)
 	err = id2.UnmarshalBinary(b)
 	if err != nil {
 		t.Error(err)
@@ -62,7 +62,7 @@ func TestBinaryMarshalling(t *testing.T) {
 func TestTextMarshalling(t *testing.T) {
 	target := "80351110224678912"
 
-	id := NewID(4534)
+	id := NewSnowflake(4534)
 	err := id.UnmarshalText([]byte(target))
 	if err != nil {
 		t.Error(err)
@@ -81,7 +81,7 @@ func TestTextMarshalling(t *testing.T) {
 func TestJSONMarshalling(t *testing.T) {
 	target := "\"80351110224678912\""
 
-	id := NewID(0)
+	id := NewSnowflake(0)
 	err := json.Unmarshal([]byte(target), &id)
 	if err != nil {
 		t.Error(err)

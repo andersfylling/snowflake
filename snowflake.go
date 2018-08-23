@@ -13,7 +13,7 @@ func NewSnowflake(id uint64) Snowflake {
 type Snowflake uint64
 
 // JSON can be useful when sending the snowflake Snowflake by a json API
-type JSON struct {
+type SnowflakeJSON struct {
 	ID    Snowflake `json:"id"`
 	IDStr string    `json:"id_str"`
 }
@@ -27,8 +27,8 @@ func (s Snowflake) Empty() bool {
 // JSONStruct returns a struct that can be embedded in other structs.
 //            This is useful if you have a API server, since js can't parse uint64.
 //            Therefore there must a snowflake Snowflake string.
-func (s Snowflake) JSONStruct() *JSON {
-	return &JSON{
+func (s Snowflake) JSONStruct() *SnowflakeJSON {
+	return &SnowflakeJSON{
 		ID:    s,
 		IDStr: s.String(),
 	}
@@ -79,27 +79,4 @@ func (s *Snowflake) UnmarshalText(text []byte) (err error) {
 	*s = Snowflake(id)
 
 	return
-}
-
-// ParseSnowflakeString interprets a string with a decimal number.
-//         Note that in contrast to ParseUint, this function assumes the given string is
-//         always valid and thus will panic rather than return an error.
-//         This should only be used on checks that can be done at compile time,
-//         unless you want to trust other modules to returns valid data.
-func ParseSnowflakeString(v string) Snowflake {
-	id, err := ParseSnowflakeUint(v, 10)
-	if err != nil {
-		panic(err) // TODO
-	}
-	return id
-}
-
-// ParseUint converts a string and given base to a Snowflake
-func ParseSnowflakeUint(v string, base int) (Snowflake, error) {
-	if v == "" {
-		return Snowflake(0), nil
-	}
-
-	id, err := strconv.ParseUint(v, base, 64)
-	return Snowflake(id), err
 }
