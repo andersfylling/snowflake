@@ -2,6 +2,7 @@ package snowflake
 
 import (
 	"strconv"
+	"time"
 )
 
 // NewID creates a new Snowflake Snowflake from a uint64.
@@ -69,6 +70,11 @@ func (s Snowflake) MarshalText() (text []byte, err error) {
 	err = nil
 
 	return
+}
+
+func (s Snowflake) Date() time.Time {
+	var epoch uint64 = (uint64(s) >> uint64(22)) + uint64(1420070400000) // Discord epoch
+	return time.Unix(int64(epoch), 0)
 }
 
 func (s *Snowflake) UnmarshalText(text []byte) (err error) {

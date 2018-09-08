@@ -96,3 +96,10 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Errorf("Incorrect snowflake value. Got %s, wants %s", string(b), target)
 	}
 }
+
+func TestDate(t *testing.T) {
+	s := NewSnowflake(228846961774559232)
+	if s.Date().Unix() != 1474631767458 {
+		t.Error("date is incorrect")
+	}
+}
