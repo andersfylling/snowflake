@@ -1,9 +1,12 @@
 package snowflake
 
 import (
+	"errors"
 	"strconv"
 	"time"
 )
+
+const DiscordEpoch uint64 = 1420070400000
 
 // NewID creates a new Snowflake Snowflake from a uint64.
 func NewSnowflake(id uint64) Snowflake {
@@ -65,6 +68,25 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 	return
 }
 
+func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
+	*s = 0
+	length := len(data) - 1
+	var c byte
+	for i := 1; i < length; i++ {
+		c = data[i]-'0'
+		if c < 0 || c > 9 {
+			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
+			return
+		}
+		*s = *s*10 + Snowflake(c)
+	}
+	return
+}
+
+func (s Snowflake) MarshalJSON() (data []byte, err error) {
+	return []byte(`"` + s.String() + `"`), nil
+}
+
 func (s Snowflake) MarshalText() (text []byte, err error) {
 	text = []byte(s.String())
 	err = nil
@@ -73,7 +95,7 @@ func (s Snowflake) MarshalText() (text []byte, err error) {
 }
 
 func (s Snowflake) Date() time.Time {
-	var epoch uint64 = (uint64(s) >> uint64(22)) + uint64(1420070400000) // Discord epoch
+	var epoch uint64 = (uint64(s) >> uint64(22)) + DiscordEpoch
 	return time.Unix(int64(epoch), 0)
 }
 

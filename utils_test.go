@@ -57,5 +57,4 @@ func TestGetSnowflake(t *testing.T) {
 		t.Error("cannot parse int")
 	}
 
-
 }

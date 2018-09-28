@@ -1,8 +1,8 @@
 package snowflake
 
 import (
-	"strconv"
 	"errors"
+	"strconv"
 )
 
 // ParseSnowflakeString interprets a string with a decimal number.
@@ -30,17 +30,27 @@ func ParseSnowflakeUint(v string, base int) (Snowflake, error) {
 
 func GetSnowflake(v interface{}) (s Snowflake, err error) {
 	switch x := v.(type) {
-	case int: s = NewSnowflake(uint64(x))
-	case int8: s = NewSnowflake(uint64(x))
-	case int16: s = NewSnowflake(uint64(x))
-	case int32: s = NewSnowflake(uint64(x))
-	case int64: s = NewSnowflake(uint64(x))
+	case int:
+		s = NewSnowflake(uint64(x))
+	case int8:
+		s = NewSnowflake(uint64(x))
+	case int16:
+		s = NewSnowflake(uint64(x))
+	case int32:
+		s = NewSnowflake(uint64(x))
+	case int64:
+		s = NewSnowflake(uint64(x))
 
-	case uint: s = NewSnowflake(uint64(x))
-	case uint8: s = NewSnowflake(uint64(x))
-	case uint16: s = NewSnowflake(uint64(x))
-	case uint32: s = NewSnowflake(uint64(x))
-	case uint64: s = NewSnowflake(x)
+	case uint:
+		s = NewSnowflake(uint64(x))
+	case uint8:
+		s = NewSnowflake(uint64(x))
+	case uint16:
+		s = NewSnowflake(uint64(x))
+	case uint32:
+		s = NewSnowflake(uint64(x))
+	case uint64:
+		s = NewSnowflake(x)
 
 	case string:
 		i, err := strconv.ParseUint(x, 10, 64)
@@ -50,14 +60,15 @@ func GetSnowflake(v interface{}) (s Snowflake, err error) {
 			s = NewSnowflake(i)
 		}
 
-	case Snowflake: s = x
-	case SnowflakeJSON: s = x.ID
+	case Snowflake:
+		s = x
+	case SnowflakeJSON:
+		s = x.ID
 
 	default:
 		s = NewSnowflake(0)
 		err = errors.New("not supported type for snowflake")
 	}
-
 
 	return
 }
