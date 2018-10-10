@@ -71,6 +71,15 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	*s = 0
 	length := len(data) - 1
+	if length == -1 {
+		return
+	}
+	
+	// "id":null
+	if length == 4 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
+		return
+	}
+	
 	var c byte
 	for i := 1; i < length; i++ {
 		c = data[i]-'0'
