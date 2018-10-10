@@ -118,31 +118,41 @@ func TestDate(t *testing.T) {
 	}
 }
 
+type testSet struct {
+	result uint64 
+	data []byte 
+}
+
 func TestSnowflake_UnmarshalJSON(t *testing.T) {
 	if _, ok := interface{}((*Snowflake)(nil)).(json.Unmarshaler); !ok {
 		t.Error("does not implement json.Unmarshaler")
 	}
-
-	data := map[uint64][]byte{}
-	data[8994537984753] = []byte("{\"id\":\"8994537984753\"}")
-	data[4573485] = []byte("{\"id\":\"4573485\"}")
-	data[2349872349] = []byte("{\"id\":\"00002349872349\"}")
-	data[435453] = []byte("{\"id\":\"435453\"}")
-	data[4987598525434463] = []byte("{\"id\":\"4987598525434463\"}")
-	data[59823042] = []byte("{\"id\":\"059823042\"}")
-	data[698734534634] = []byte("{\"id\":\"698734534634\"}")
-	data[24795873495] = []byte("{\"id\":\"024795873495\"}")
-	data[598360703000] = []byte("{\"id\":\"0598360703000\"}")
+	
+	data := []testSet{
+		{8994537984753, []byte(`{"id":"8994537984753"}`)},
+		{4573485, []byte(`{"id":"4573485"}`)},
+		{2349872349, []byte(`{"id":"00002349872349"}`)},
+		{435453, []byte(`{"id":"435453"}`)},
+		{4987598525434463, []byte(`{"id":"4987598525434463"}`)},
+		{59823042, []byte(`{"id":"059823042"}`)},
+		{698734534634, []byte(`{"id":"698734534634"}`)},
+		{24795873495, []byte(`{"id":"024795873495"}`)},
+		{598360703000, []byte(`{"id":"0598360703000"}`)},
+		{0, []byte(`{"id":"null"}`)},
+		{0, []byte(`{"id":null}`)},
+	}
 
 	type Foo struct {
 		Bar Snowflake `json:"id,omitempty"`
 	}
 
 	foo := &Foo{}
-	for wants, input := range data {
+	for i := range data {
+		wants := data[i].result
+		input := data[i].data
 		err := json.Unmarshal(input, foo)
 		if err != nil {
-			t.Error(err)
+			t.Error(err.Error() + " | " + "given input of: " + string(input))
 		}
 
 		if uint64(foo.Bar) != wants {

@@ -76,7 +76,11 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	}
 	
 	// "id":null
-	if length == 4 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
+	// length - 1, remember
+	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
+		return
+	}
+	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
 		return
 	}
 	
