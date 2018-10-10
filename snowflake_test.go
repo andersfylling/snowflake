@@ -93,7 +93,7 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Error("does not implement json.Marshaler")
 	}
 
-	target := "\"80351110224678912\""
+	target := `"80351110224678912"`
 
 	id := NewSnowflake(0)
 	err := json.Unmarshal([]byte(target), &id)
@@ -108,6 +108,17 @@ func TestJSONMarshalling(t *testing.T) {
 
 	if string(b) != target {
 		t.Errorf("Incorrect snowflake value. Got %s, wants %s", string(b), target)
+	}
+
+
+
+	id = NewSnowflake(0)
+	b, err = json.Marshal(&id)
+	if err != nil {
+		t.Error(err)
+	}
+	if string(b) != `null` {
+		t.Error("expected 0 Snowflake to display as null")
 	}
 }
 

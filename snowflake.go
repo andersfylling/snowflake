@@ -97,7 +97,12 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (s Snowflake) MarshalJSON() (data []byte, err error) {
-	return []byte(`"` + s.String() + `"`), nil
+	if s == 0 {
+		data = []byte(`null`)
+	} else {
+		data = []byte(`"` + s.String() + `"`)
+	}
+	return
 }
 
 func (s Snowflake) MarshalText() (text []byte, err error) {
