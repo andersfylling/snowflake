@@ -3,6 +3,7 @@ package snowflake
 import (
 	"encoding"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"testing"
 )
@@ -110,8 +111,6 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Errorf("Incorrect snowflake value. Got %s, wants %s", string(b), target)
 	}
 
-
-
 	id = NewSnowflake(0)
 	b, err = json.Marshal(&id)
 	if err != nil {
@@ -130,15 +129,15 @@ func TestDate(t *testing.T) {
 }
 
 type testSet struct {
-	result uint64 
-	data []byte 
+	result uint64
+	data   []byte
 }
 
 func TestSnowflake_UnmarshalJSON(t *testing.T) {
 	if _, ok := interface{}((*Snowflake)(nil)).(json.Unmarshaler); !ok {
 		t.Error("does not implement json.Unmarshaler")
 	}
-	
+
 	data := []testSet{
 		{8994537984753, []byte(`{"id":"8994537984753"}`)},
 		{4573485, []byte(`{"id":"4573485"}`)},
@@ -275,6 +274,111 @@ func BenchmarkSnowflake_UnmarshalJSON(b *testing.B) {
 			if i == length {
 				i = 0
 			}
+		}
+	})
+}
+
+type snowflakeA uint64
+
+func (s *snowflakeA) UnmarshalJSON(data []byte) (err error) {
+	*s = 0
+	length := len(data) - 1
+	if length == -1 {
+		return
+	}
+
+	// "id":null
+	// length - 1, remember
+	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
+		return
+	}
+	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
+		return
+	}
+
+	var c byte
+	for i := 1; i < length; i++ {
+		c = data[i] - '0'
+		if c < 0 || c > 9 {
+			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
+			return
+		}
+		*s = *s*10 + snowflakeA(c)
+	}
+	return
+}
+
+type snowflakeB uint64
+
+func (s *snowflakeB) UnmarshalJSON(data []byte) (err error) {
+	*s = 0
+	length := len(data) - 1
+	if length == -1 {
+		return
+	}
+
+	// "id":null
+	// length - 1, remember
+	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
+		return
+	}
+	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
+		return
+	}
+
+	var c byte
+	var tmp uint64
+	for i := 1; i < length; i++ {
+		c = data[i] - '0'
+		if c < 0 || c > 9 {
+			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
+			return
+		}
+		tmp = tmp*10 + uint64(c)
+	}
+
+	*s = snowflakeB(tmp)
+	return
+}
+
+func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
+	dataSet := [][]byte{
+		[]byte("\"8994537984753\""),
+		[]byte("\"4573485\""),
+		[]byte("\"00002349872349\""),
+		[]byte("\"435453\""),
+		[]byte("\"4987598525434463\""),
+		[]byte("\"059823042\""),
+		[]byte("\"698734534634\""),
+		[]byte("\"024795873495\""),
+		[]byte("\"0598360703000\""),
+	}
+	b.Run("A", func(b *testing.B) {
+		length := len(dataSet)
+		s := snowflakeA(0)
+		i := 0
+		for n := 0; n < b.N; n++ {
+			s.UnmarshalJSON(dataSet[i])
+			i++
+			if i == length {
+				i = 0
+			}
+		}
+		if s == 0 {
+		}
+	})
+	b.Run("B", func(b *testing.B) {
+		length := len(dataSet)
+		s := snowflakeB(0)
+		i := 0
+		for n := 0; n < b.N; n++ {
+			s.UnmarshalJSON(dataSet[i])
+			i++
+			if i == length {
+				i = 0
+			}
+		}
+		if s == 0 {
 		}
 	})
 }

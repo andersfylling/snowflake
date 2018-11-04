@@ -74,7 +74,7 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	if length == -1 {
 		return
 	}
-	
+
 	// "id":null
 	// length - 1, remember
 	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
@@ -83,16 +83,19 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
 		return
 	}
-	
+
 	var c byte
+	var tmp uint64
 	for i := 1; i < length; i++ {
-		c = data[i]-'0'
+		c = data[i] - '0'
 		if c < 0 || c > 9 {
 			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
 			return
 		}
-		*s = *s*10 + Snowflake(c)
+		tmp = tmp*10 + uint64(c)
 	}
+
+	*s = Snowflake(tmp)
 	return
 }
 
