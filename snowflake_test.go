@@ -6,7 +6,16 @@ import (
 	"errors"
 	"strconv"
 	"testing"
+	"time"
 )
+
+func TestSnowflake_Date(t *testing.T) {
+	s := Snowflake(0)
+	a := s.DateByEpoch(EpochDiscord)
+	if a.Sub(time.Unix(int64(EpochDiscord), 0)) != 0 {
+		t.Error("expected Date subtracted the epoch to be 0")
+	}
+}
 
 func TestString(t *testing.T) {
 	var b []byte
@@ -16,7 +25,11 @@ func TestString(t *testing.T) {
 		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
 	}
 
-	if id.JSONStruct().IDStr != "435834986943" {
+	if id.JSONStruct().IDStr != `"435834986943"` {
+		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
+	}
+
+	if id.JSONStruct().ID != 435834986943 {
 		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
 	}
 
@@ -94,10 +107,10 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Error("does not implement json.Marshaler")
 	}
 
-	target := `"80351110224678912"`
+	target := `80351110224678912`
 
 	id := NewSnowflake(0)
-	err := json.Unmarshal([]byte(target), &id)
+	err := json.Unmarshal([]byte(`"`+target+`"`), &id)
 	if err != nil {
 		t.Error(err)
 	}
@@ -117,7 +130,7 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Error(err)
 	}
 	if string(b) != `null` {
-		t.Error("expected 0 Snowflake to display as null")
+		t.Error("expected 0 Snowflake to display as null, got " + string(b))
 	}
 }
 
@@ -178,7 +191,7 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func BenchmarkSnowflake_UnmarshalJSON(b *testing.B) {
+func BenchmarkUnmarshalJSON(b *testing.B) {
 	dataSets := [][]byte{
 		[]byte("\"8994537984753\""),
 		[]byte("\"4573485\""),
@@ -353,7 +366,7 @@ func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
 		[]byte("\"024795873495\""),
 		[]byte("\"0598360703000\""),
 	}
-	b.Run("A", func(b *testing.B) {
+	b.Run("dereference", func(b *testing.B) {
 		length := len(dataSet)
 		s := snowflakeA(0)
 		i := 0
@@ -367,7 +380,7 @@ func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
 		if s == 0 {
 		}
 	})
-	b.Run("B", func(b *testing.B) {
+	b.Run("tmp-var", func(b *testing.B) {
 		length := len(dataSet)
 		s := snowflakeB(0)
 		i := 0

@@ -6,15 +6,20 @@ import (
 	"time"
 )
 
-const DiscordEpoch uint64 = 1420070400000
+const (
+	EpochDiscord uint64 = 1420070400000
+	EpochTwitter uint64 = 1288834974657
+)
 
 // NewID creates a new Snowflake Snowflake from a uint64.
 func NewSnowflake(id uint64) Snowflake {
 	return Snowflake(id)
 }
 
-// Snowflake Snowflake Snowflake created by twitter
+// Snowflake twitter snowflake design
 type Snowflake uint64
+
+type ID = Snowflake
 
 // JSON can be useful when sending the snowflake Snowflake by a json API
 type SnowflakeJSON struct {
@@ -34,7 +39,7 @@ func (s Snowflake) Empty() bool {
 func (s Snowflake) JSONStruct() *SnowflakeJSON {
 	return &SnowflakeJSON{
 		ID:    s,
-		IDStr: s.String(),
+		IDStr: `"` + s.String() + `"`,
 	}
 }
 
@@ -70,23 +75,27 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 
 func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	*s = 0
-	length := len(data) - 1
-	if length == -1 {
+	length := len(data)
+	if length == 0 {
 		return
 	}
 
-	// "id":null
-	// length - 1, remember
-	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
-		return
+	// if the snowflake is passed as a string, we account for the double quote wrap
+	start := 0
+	if data[0] == '"' {
+		start++
+		length--
 	}
-	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
+
+	// "id":null
+	// "id":"null"
+	if length < 6 && data[start] == 'n' && data[start+1] == 'u' && data[start+2] == 'l' && data[start+3] == 'l' {
 		return
 	}
 
 	var c byte
 	var tmp uint64
-	for i := 1; i < length; i++ {
+	for i := start; i < length; i++ {
 		c = data[i] - '0'
 		if c < 0 || c > 9 {
 			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
@@ -100,10 +109,12 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (s Snowflake) MarshalJSON() (data []byte, err error) {
+	// expect to have both "id" and "id_str"
+	// but this can't be done, so the SnowflakeJSON type is provided as an alternative.
 	if s == 0 {
 		data = []byte(`null`)
 	} else {
-		data = []byte(`"` + s.String() + `"`)
+		data = []byte(s.String())
 	}
 	return
 }
@@ -115,11 +126,6 @@ func (s Snowflake) MarshalText() (text []byte, err error) {
 	return
 }
 
-func (s Snowflake) Date() time.Time {
-	var epoch uint64 = (uint64(s) >> uint64(22)) + DiscordEpoch
-	return time.Unix(int64(epoch), 0)
-}
-
 func (s *Snowflake) UnmarshalText(text []byte) (err error) {
 	id, err := strconv.ParseUint(string(text), 10, 64)
 	if err != nil {
@@ -128,4 +134,9 @@ func (s *Snowflake) UnmarshalText(text []byte) (err error) {
 	*s = Snowflake(id)
 
 	return
+}
+
+func (s Snowflake) DateByEpoch(epoch uint64) time.Time {
+	date := (uint64(s) >> uint64(22)) + epoch
+	return time.Unix(int64(date), 0)
 }
