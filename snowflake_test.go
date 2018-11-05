@@ -17,6 +17,12 @@ func TestSnowflake_Date(t *testing.T) {
 	}
 }
 
+func TestASCIITrick(t *testing.T) {
+	if int('n'+'u'+'l')*2 < 4*'9' {
+		t.Error("unable to sum ascii chars")
+	}
+}
+
 func TestString(t *testing.T) {
 	var b []byte
 	var err error
@@ -161,7 +167,6 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		{698734534634, []byte(`{"id":"698734534634"}`)},
 		{24795873495, []byte(`{"id":"024795873495"}`)},
 		{598360703000, []byte(`{"id":"0598360703000"}`)},
-		{0, []byte(`{"id":"null"}`)},
 		{0, []byte(`{"id":null}`)},
 	}
 
@@ -251,10 +256,10 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		}
 	})
 	type fooOld struct {
-		Foo string `json:"id,omitempty"`
+		Foo string `json:"id"`
 	}
 	type fooNew struct {
-		Foo Snowflake `json:"id,omitempty"`
+		Foo Snowflake `json:"id"`
 	}
 	dataSetsJSON := [][]byte{
 		[]byte("{\"id\":\"8994537984753\"}"),
@@ -266,6 +271,7 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		[]byte("{\"id\":\"698734534634\"}"),
 		[]byte("{\"id\":\"024795873495\"}"),
 		[]byte("{\"id\":\"0598360703000\"}"),
+		[]byte("{\"id\":null}"),
 	}
 	b.Run("string-struct", func(b *testing.B) {
 		foo := &fooOld{}
@@ -273,6 +279,7 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		length := len(dataSetsJSON)
 		for n := 0; n < b.N; n++ {
 			_ = json.Unmarshal(dataSetsJSON[i], foo)
+			i++
 			if i == length {
 				i = 0
 			}
@@ -284,6 +291,7 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		length := len(dataSetsJSON)
 		for n := 0; n < b.N; n++ {
 			_ = json.Unmarshal(dataSetsJSON[i], foo)
+			i++
 			if i == length {
 				i = 0
 			}
@@ -392,6 +400,37 @@ func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
 			}
 		}
 		if s == 0 {
+		}
+	})
+}
+
+var sink_nullcheck bool
+var sink_nullcheck2 bool
+var sink_nullcheck3 bool
+func BenchmarkNullCheck(b *testing.B) {
+	// this trick isn't needed any longer, as we assume none string values starting with n, with a length of 4 is null
+	b.Run("asci-sum", func(b *testing.B) {
+		data := []byte(`null`)
+		length := len(data)
+		start := 0
+		for n := 0; n < b.N; n++ {
+			sink_nullcheck = length < 6 && int(data[start])+int(data[start+1])+int(data[start+2])+int(data[start+3]) == int('n'+'u'+'l'+'l')
+		}
+	})
+	b.Run("branched", func(b *testing.B) {
+		data := []byte(`null`)
+		length := len(data)
+		start := 0
+		for n := 0; n < b.N; n++ {
+			sink_nullcheck2 = length < 6 && data[start] == 'n' && data[start+1] == 'u' && data[start+2] == 'l' && data[start+3] == 'l'
+		}
+	})
+	b.Run("assuming", func(b *testing.B) {
+		data := []byte(`null`)
+		length := len(data)
+		start := 0
+		for n := 0; n < b.N; n++ {
+			sink_nullcheck3 = length == 4 && data[start] == 'n'
 		}
 	})
 }

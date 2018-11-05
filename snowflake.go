@@ -80,17 +80,20 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 
-	// if the snowflake is passed as a string, we account for the double quote wrap
-	start := 0
-	if data[0] == '"' {
-		start++
-		length--
+	// "id":null <- valid null
+	// "id":"null" <- not a null
+	// no need to check for the entire null word: if the first is a letter, we can't parse it anyways.
+	// and since null, is never used in a string, "null", we can safely assume the n is the start of a null.
+	first := data[0]
+	if length < 6 && first == 'n' {
+		return
 	}
 
-	// "id":null
-	// "id":"null"
-	if length < 6 && data[start] == 'n' && data[start+1] == 'u' && data[start+2] == 'l' && data[start+3] == 'l' {
-		return
+	// if the snowflake is passed as a string, we account for the double quote wrap
+	start := 0
+	if first == '"' {
+		start++
+		length--
 	}
 
 	var c byte
