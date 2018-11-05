@@ -61,25 +61,28 @@ if you want the Snowflake.Date() method to parse snowflakes based on the twitter
 ### Benchmarks
 
 ```markdown
-BenchmarkUnmarshalJSON/string-8  	                   50000000	        24.70 ns/op
-BenchmarkUnmarshalJSON/uint64-a-8         	          300000000	         4.17 ns/op
-BenchmarkUnmarshalJSON/uint64-b-8         	           20000000	        77.30 ns/op
+BenchmarkUnmarshalJSON/string-8                        50000000	        24.70 ns/op
+BenchmarkUnmarshalJSON/uint64-a-8                     300000000	         4.17 ns/op
+BenchmarkUnmarshalJSON/uint64-b-8                      20000000	        77.30 ns/op
 
-BenchmarkUnmarshalJSON/string-struct-8    	            3000000	       500.00 ns/op
-BenchmarkUnmarshalJSON/snowflake-struct-8 	            3000000	       476.00 ns/op
+BenchmarkUnmarshalJSON/string-struct-8                  3000000	       500.00 ns/op
+BenchmarkUnmarshalJSON/snowflake-struct-8               3000000	       476.00 ns/op
 
 BenchmarkUnmarshal_snowflakeStrategies/dereference-8  100000000	        15.40 ns/op
 BenchmarkUnmarshal_snowflakeStrategies/tmp-var-8      100000000	        11.00 ns/op
 ```
 In the first 3 tests, I test out the convertion strategy directly.
-1. string: byte slice is copied by calling `dst = string(src)`
-2. uint64-a: a custom converted (loop) is used
-3. uint64-b: strconv.ParseUint is used
+
+ 1. string: byte slice is copied by calling `dst = string(src)`
+ 2. uint64-a: a custom converted (loop) is used
+ 3. uint64-b: strconv.ParseUint is used
 
 In the next 2 tests, I call json.Unmarshal to see how it will perform in real life.
-4. a struct with `ID string \`json:"snowflake"\``
-5. a struct with `ID Snowflake \`json:"snowflake"\``, which utilises the custom loop found in #2
 
-These last tests simply regards optimazations of the current custom loop, just as removing dereference. (The UnmarshalJSON method is called here which is why it slower than #2):
-6. using dereference to update the snowflake during loop
-7. using a local var during the loop, then updating the snowflake when finishing with no error
+ 4. a struct with `ID string 'json:"snowflake"'`
+ 5. a struct with `ID Snowflake 'json:"snowflake"'`, which utilises the custom loop found in #2
+
+These last tests simply regards optimazations of the current custom loop, just as removing dereference. (The UnmarshalJSON method is called here which is why it slower than #2).
+
+ 6. using dereference to update the snowflake during loop
+ 7. using a local var during the loop, then updating the snowflake when finishing with no error
