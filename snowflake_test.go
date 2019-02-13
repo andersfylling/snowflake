@@ -142,7 +142,7 @@ func TestJSONMarshalling(t *testing.T) {
 
 func TestDate(t *testing.T) {
 	s := NewSnowflake(228846961774559232)
-	if s.Date().Unix() != 1474631767458 {
+	if s.Date().Unix() != 1474631767 {
 		t.Error("date is incorrect")
 	}
 }
