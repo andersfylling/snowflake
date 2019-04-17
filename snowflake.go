@@ -33,6 +33,11 @@ func (s Snowflake) IsZero() bool {
 	return uint64(s) == 0
 }
 
+// Valid makes sure the snowflake is after the fixed epoch
+func (s Snowflake) Valid() bool {
+	return (s >> 22) >= 1 // older than 1 millisecond
+}
+
 // JSONStruct returns a struct that can be embedded in other structs.
 //            This is useful if you have a API server, since js can't parse uint64.
 //            Therefore there must a snowflake Snowflake string.
