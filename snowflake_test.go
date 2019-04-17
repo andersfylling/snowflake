@@ -58,7 +58,7 @@ func TestString(t *testing.T) {
 
 func TestEmpty(t *testing.T) {
 	id := NewSnowflake(0)
-	if !id.Empty() {
+	if !id.IsZero() {
 		t.Errorf("Expects ID to be viewed as empty when value is 0")
 	}
 }
@@ -407,6 +407,7 @@ func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
 var sink_nullcheck bool
 var sink_nullcheck2 bool
 var sink_nullcheck3 bool
+
 func BenchmarkNullCheck(b *testing.B) {
 	// this trick isn't needed any longer, as we assume none string values starting with n, with a length of 4 is null
 	b.Run("asci-sum", func(b *testing.B) {

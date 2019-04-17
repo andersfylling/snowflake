@@ -27,9 +27,9 @@ type SnowflakeJSON struct {
 	IDStr string    `json:"id_str"`
 }
 
-// Empty since snowflake exists of several parts, including a timestamp,
+// IsZero since snowflake exists of several parts, including a timestamp,
 //       I assume a valid snowflake Snowflake is never 0.
-func (s Snowflake) Empty() bool {
+func (s Snowflake) IsZero() bool {
 	return uint64(s) == 0
 }
 
