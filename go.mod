@@ -1,1 +1,1 @@
-module github.com/andersfylling/snowflake/v3
+module github.com/andersfylling/snowflake/v4
