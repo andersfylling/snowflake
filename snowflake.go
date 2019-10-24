@@ -89,16 +89,19 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	// "id":"null" <- not a null
 	// no need to check for the entire null word: if the first is a letter, we can't parse it anyways.
 	// and since null, is never used in a string, "null", we can safely assume the n is the start of a null.
-	first := data[0]
-	if length < 6 && first == 'n' {
+	if length < 6 && data[0] == 'n' {
 		return
 	}
 
 	// if the snowflake is passed as a string, we account for the double quote wrap
 	start := 0
-	if first == '"' {
+	if data[0] == '"' {
 		start++
 		length--
+	}
+	if signed := data[1] == '-' || data[0] == '-'; signed {
+		start++
+		*s |= 1 << 63
 	}
 
 	var c byte
@@ -112,7 +115,7 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 		tmp = tmp*10 + uint64(c)
 	}
 
-	*s = Snowflake(tmp)
+	*s |= Snowflake(tmp)
 	return
 }
 

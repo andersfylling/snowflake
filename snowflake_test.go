@@ -153,6 +153,24 @@ type testSet struct {
 }
 
 func TestSnowflake_UnmarshalJSON(t *testing.T) {
+
+	// make sure it works on negative numbers
+	signedIntJSON1 := []byte("\"-1\"")
+	signedIntJSON2 := []byte("-1")
+	var s Snowflake
+	if err := json.Unmarshal(signedIntJSON1, &s); err != nil {
+		t.Error(err)
+	}
+	if s != Snowflake((1<<63)|1) {
+		t.Error("did not handle signed int")
+	}
+	if err := json.Unmarshal(signedIntJSON2, &s); err != nil {
+		t.Error(err)
+	}
+	if s != Snowflake((1<<63)|1) {
+		t.Error("did not handle signed int")
+	}
+
 	if _, ok := interface{}((*Snowflake)(nil)).(json.Unmarshaler); !ok {
 		t.Error("does not implement json.Unmarshaler")
 	}
@@ -193,6 +211,10 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 	err := json.Unmarshal(evilJSON, foo)
 	if err == nil {
 		t.Error("expected to fail, but continued to parse string as uint64")
+	}
+	signedIntJSON := []byte("{\"id\":\"-234234\"}")
+	if err := json.Unmarshal(signedIntJSON, foo); err != nil {
+		t.Error(err)
 	}
 }
 

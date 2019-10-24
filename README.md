@@ -1,6 +1,8 @@
 # Snowflake [![GoDoc](https://godoc.org/github.com/andersfylling/snowflake?status.svg)](https://godoc.org/github.com/andersfylling/snowflake) [![CircleCI](https://circleci.com/gh/andersfylling/snowflake/tree/master.svg?style=shield)](https://circleci.com/gh/andersfylling/snowflake/tree/master) [![Go Report Card](https://goreportcard.com/badge/github.com/andersfylling/snowflake)](https://goreportcard.com/report/github.com/andersfylling/snowflake) [![Test Coverage](https://api.codeclimate.com/v1/badges/5fe3da7a87c3185b5f33/test_coverage)](https://codeclimate.com/github/andersfylling/snowflake/test_coverage)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com)[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
+> This lib supports signed numbers, but will convert them to uint64.
+
 Does not hold functionality to connect a snowflake service, nor generating snowflakes. But rather parsing the snowflakes from JSON only. The default behaviour is to parse Discord snowflakes, but build constraints exists to handle twitter snowflakes as well. Note that there also exist `DateByEpoch` to which you can pass any desired epoch to affect the date parsing.
 
 For module usage you must utilise the suffix found in the go.mod file (/v2 for v2.x.x releases, /v3 for v3.x.x releases, etc.).
