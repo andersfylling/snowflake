@@ -34,15 +34,15 @@ if you want the Snowflake.Date() method to parse snowflakes based on the twitter
 ### Benchmarks
 
 ```markdown
-BenchmarkUnmarshalJSON/string-24                                32293479                31.3 ns/op
-BenchmarkUnmarshalJSON/uint64-a-24                              146629916               7.29 ns/op
-BenchmarkUnmarshalJSON/uint64-b-24                              10259689                118 ns/op
+BenchmarkUnmarshalJSON/string-4            	40553596	        27.8 ns/op
+BenchmarkUnmarshalJSON/uint64-a-4          	195255220	        5.90 ns/op
+BenchmarkUnmarshalJSON/uint64-b-4          	10915821	        92.0 ns/op
 
-BenchmarkUnmarshalJSON/string-struct-24                         1540878                 772 ns/op
-BenchmarkUnmarshalJSON/snowflake-struct-24                      1370728                 839 ns/op
+BenchmarkUnmarshalJSON/string-struct-4     	 1363028	       784 ns/op
+BenchmarkUnmarshalJSON/snowflake-struct-4  	 1645940	       757 ns/op
 
-BenchmarkUnmarshal_snowflakeStrategies/dereference-24           100000000               11.5 ns/op
-BenchmarkUnmarshal_snowflakeStrategies/tmp-var-24               111329518               11.2 ns/op
+BenchmarkUnmarshal_snowflakeStrategies/dereference-4         	59154159	        22.4 ns/op
+BenchmarkUnmarshal_snowflakeStrategies/tmp-var-4             	72053302	        18.2 ns/op
 ```
 In the first 3 tests, I test out the convertion strategy directly.
 
