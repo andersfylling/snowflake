@@ -31,14 +31,6 @@ func TestString(t *testing.T) {
 		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
 	}
 
-	if id.JSONStruct().IDStr != `"435834986943"` {
-		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
-	}
-
-	if id.JSONStruct().ID != 435834986943 {
-		t.Errorf("String conversion failed. Got %s, wants %s", id.String(), "435834986943")
-	}
-
 	if id.HexString() != "6579ca21bf" {
 		t.Errorf("String conversion for Hex failed. Got %s, wants %s", id.HexString(), "6579ca21bf")
 	}
@@ -113,10 +105,10 @@ func TestJSONMarshalling(t *testing.T) {
 		t.Error("does not implement json.Marshaler")
 	}
 
-	target := `80351110224678912`
+	target := `"80351110224678912"`
 
 	id := NewSnowflake(0)
-	err := json.Unmarshal([]byte(`"`+target+`"`), &id)
+	err := json.Unmarshal([]byte(target), &id)
 	if err != nil {
 		t.Error(err)
 	}
@@ -138,6 +130,10 @@ func TestJSONMarshalling(t *testing.T) {
 	if string(b) != `null` {
 		t.Error("expected 0 Snowflake to display as null, got " + string(b))
 	}
+
+	if err = json.Unmarshal([]byte("1"), &id); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestDate(t *testing.T) {
@@ -153,7 +149,6 @@ type testSet struct {
 }
 
 func TestSnowflake_UnmarshalJSON(t *testing.T) {
-
 	// make sure it works on negative numbers
 	signedIntJSON1 := []byte("\"-1\"")
 	signedIntJSON2 := []byte("-1")
@@ -181,6 +176,7 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		{2349872349, []byte(`{"id":"00002349872349"}`)},
 		{435453, []byte(`{"id":"435453"}`)},
 		{4987598525434463, []byte(`{"id":"4987598525434463"}`)},
+		{69696969, []byte(`{"id":69696969}`)},
 		{59823042, []byte(`{"id":"059823042"}`)},
 		{698734534634, []byte(`{"id":"698734534634"}`)},
 		{24795873495, []byte(`{"id":"024795873495"}`)},

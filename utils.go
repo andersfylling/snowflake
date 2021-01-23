@@ -63,8 +63,6 @@ func GetSnowflake(v interface{}) (s Snowflake, err error) {
 
 	case Snowflake:
 		s = x
-	case SnowflakeJSON:
-		s = x.ID
 
 	default:
 		s = NewSnowflake(0)

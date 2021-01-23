@@ -21,12 +21,6 @@ type Snowflake uint64
 
 type ID = Snowflake
 
-// JSON can be useful when sending the snowflake Snowflake by a json API
-type SnowflakeJSON struct {
-	ID    Snowflake `json:"id"`
-	IDStr string    `json:"id_str"`
-}
-
 // IsZero since snowflake exists of several parts, including a timestamp,
 //       I assume a valid snowflake Snowflake is never 0.
 func (s Snowflake) IsZero() bool {
@@ -36,16 +30,6 @@ func (s Snowflake) IsZero() bool {
 // Valid makes sure the snowflake is after the fixed epoch
 func (s Snowflake) Valid() bool {
 	return (s >> 22) >= 1 // older than 1 millisecond
-}
-
-// JSONStruct returns a struct that can be embedded in other structs.
-//            This is useful if you have a API server, since js can't parse uint64.
-//            Therefore there must a snowflake Snowflake string.
-func (s Snowflake) JSONStruct() *SnowflakeJSON {
-	return &SnowflakeJSON{
-		ID:    s,
-		IDStr: `"` + s.String() + `"`,
-	}
 }
 
 // String returns the decimal representation of the snowflake Snowflake.
@@ -81,16 +65,12 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	*s = 0
 	length := len(data)
-	if length == 0 || (length == 1 && data[0] == '0') {
-		// could assume that if first byte is '0' then there wont be any more
+	if length == 0 {
+		// Blank value.
 		return
 	}
-
-	// "id":null <- valid null
-	// "id":"null" <- not a null
-	// no need to check for the entire null word: if the first is a letter, we can't parse it anyways.
-	// and since null, is never used in a string, "null", we can safely assume the n is the start of a null.
-	if length < 6 && data[0] == 'n' {
+	if length == 4 && string(data) == "null" {
+		// This is a zero value.
 		return
 	}
 
@@ -100,7 +80,7 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 		start++
 		length--
 	}
-	if signed := data[1] == '-' || data[0] == '-'; signed {
+	if signed := data[start] == '-'; signed {
 		start++
 		*s |= 1 << 63
 	}
@@ -121,12 +101,10 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (s Snowflake) MarshalJSON() (data []byte, err error) {
-	// expect to have both "id" and "id_str"
-	// but this can't be done, so the SnowflakeJSON type is provided as an alternative.
 	if s == 0 {
 		data = []byte(`null`)
 	} else {
-		data = []byte(s.String())
+		data = []byte(`"` + s.String() + `"`)
 	}
 	return
 }

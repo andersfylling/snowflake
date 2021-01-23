@@ -25,36 +25,7 @@ type DiscordRole struct {
 }
 ```
 
-If you're creating an API that sends JSON to a multiple different language clients, some might not be able to process uint64, such as javascript. To support both uint64 and string use the JSON struct included:
-
-```go
-import . "github.com/andersfylling/snowflake"
-
-type DiscordRole struct {
-    *SnowflakeJSON           `json:"snowflake"`
-    Name        string       `json:"name"`
-    Managed     bool         `json:"managed"`
-    Mentionable bool         `json:"mentionable"`
-    Hoist       bool         `json:"hoist"`
-    Color       int          `json:"color"`
-    Position    int          `json:"position"`
-    Permissions uint64       `json:"permissions"`
-}
-```
-
-This adds two fields: `ID` and `IDStr`. Where the first is of a snowflake.ID(uint64), and the second is a string. This creates the JSON format (IDs only. Where the dots represents the remaining DiscordRole fields):
-
-```json
-{
-    "snowflake": {
-          "id": 74895735435643,
-          "id_str": "74895735435643",
-    }
-}
-```
-
-Now an alternative is to send only the string version by adding `,string` to the json tag. Since Snowflake utilizes a custom Marshaler, this won't function. if you want to support 32bit languages, you must use the SnowflakeJSON as mentioned above.
-You can also extract a SnowflakeJSON from a Snowflake by calling `Snowflake.JSONStruct()`.
+If you're creating an API that sends JSON, the snowflake will automatically be converted to/from a string for you.
 
 ### Build constraints
 if you want the Snowflake.Date() method to parse snowflakes based on the twitter epoch, you can do `go build -tags=snowflake_twitter`. The default behaviour will use the Discord epoch.
@@ -63,15 +34,15 @@ if you want the Snowflake.Date() method to parse snowflakes based on the twitter
 ### Benchmarks
 
 ```markdown
-BenchmarkUnmarshalJSON/string-8                        50000000	        24.70 ns/op
-BenchmarkUnmarshalJSON/uint64-a-8                     300000000	         4.17 ns/op
-BenchmarkUnmarshalJSON/uint64-b-8                      20000000	        77.30 ns/op
+BenchmarkUnmarshalJSON/string-4            	40553596	        27.8 ns/op
+BenchmarkUnmarshalJSON/uint64-a-4          	195255220	        5.90 ns/op
+BenchmarkUnmarshalJSON/uint64-b-4          	10915821	        92.0 ns/op
 
-BenchmarkUnmarshalJSON/string-struct-8                  3000000	       500.00 ns/op
-BenchmarkUnmarshalJSON/snowflake-struct-8               3000000	       476.00 ns/op
+BenchmarkUnmarshalJSON/string-struct-4     	 1363028	       784 ns/op
+BenchmarkUnmarshalJSON/snowflake-struct-4  	 1645940	       757 ns/op
 
-BenchmarkUnmarshal_snowflakeStrategies/dereference-8  100000000	        15.40 ns/op
-BenchmarkUnmarshal_snowflakeStrategies/tmp-var-8      100000000	        11.00 ns/op
+BenchmarkUnmarshal_snowflakeStrategies/dereference-4         	59154159	        22.4 ns/op
+BenchmarkUnmarshal_snowflakeStrategies/tmp-var-4             	72053302	        18.2 ns/op
 ```
 In the first 3 tests, I test out the convertion strategy directly.
 
