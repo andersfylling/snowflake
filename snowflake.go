@@ -80,18 +80,13 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 			// This can't be anything.
 			return
 		}
+		index := 1
 		if c = data[1]; c == '-' {
 			// Negative value.
 			*s |= 1 << 63
-		} else {
-			// Handle the first byte.
-			c -= '0'
-			if c < 0 || c > 9 {
-				return errors.New("cannot parse non-integer symbol:" + string(data[1]))
-			}
-			dataRemainder = dataRemainder*10 + Snowflake(c)
+			index++
 		}
-		for i := 2; i < length; i++ {
+		for i := index; i < length; i++ {
 			switch c = data[i]; c {
 			case '"':
 				// End of string.
