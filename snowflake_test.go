@@ -23,6 +23,13 @@ func TestASCIITrick(t *testing.T) {
 	}
 }
 
+func TestJSON1ByteCrash(t *testing.T) {
+	var snowflake Snowflake
+	if err := json.Unmarshal([]byte("1"), &snowflake); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestString(t *testing.T) {
 	var b []byte
 	var err error
