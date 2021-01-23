@@ -23,13 +23,6 @@ func TestASCIITrick(t *testing.T) {
 	}
 }
 
-func TestJSON1ByteCrash(t *testing.T) {
-	var snowflake Snowflake
-	if err := json.Unmarshal([]byte("1"), &snowflake); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestString(t *testing.T) {
 	var b []byte
 	var err error
@@ -136,6 +129,10 @@ func TestJSONMarshalling(t *testing.T) {
 	}
 	if string(b) != `null` {
 		t.Error("expected 0 Snowflake to display as null, got " + string(b))
+	}
+
+	if err = json.Unmarshal([]byte("1"), &id); err != nil {
+		t.Fatal(err)
 	}
 }
 
