@@ -75,14 +75,6 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	}
 	dataRemainder := Snowflake(0)
 	var c uint8
-	addChar := func() error {
-		c -= '0'
-		if c < 0 || c > 9 {
-			return errors.New("cannot parse non-integer symbol:" + string(data[1]))
-		}
-		dataRemainder = dataRemainder*10 + Snowflake(c)
-		return nil
-	}
 	if data[0] == '"' {
 		if length == 1 {
 			// This can't be anything.
@@ -93,9 +85,11 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 			*s |= 1 << 63
 		} else {
 			// Handle the first byte.
-			if err = addChar(); err != nil {
-				return
+			c -= '0'
+			if c < 0 || c > 9 {
+				return errors.New("cannot parse non-integer symbol:" + string(data[1]))
 			}
+			dataRemainder = dataRemainder*10 + Snowflake(c)
 		}
 		for i := 2; i < length; i++ {
 			switch c = data[i]; c {
@@ -104,9 +98,11 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 				break
 			default:
 				// Add to remainder.
-				if err = addChar(); err != nil {
-					return
+				c -= '0'
+				if c < 0 || c > 9 {
+					return errors.New("cannot parse non-integer symbol:" + string(data[1]))
 				}
+				dataRemainder = dataRemainder*10 + Snowflake(c)
 			}
 		}
 	} else {
@@ -118,10 +114,11 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 			index++
 		}
 		for ; index < length; index++ {
-			c = data[index]
-			if err = addChar(); err != nil {
-				return
+			c = data[index] - '0'
+			if c < 0 || c > 9 {
+				return errors.New("cannot parse non-integer symbol:" + string(data[1]))
 			}
+			dataRemainder = dataRemainder*10 + Snowflake(c)
 		}
 	}
 	*s |= dataRemainder
