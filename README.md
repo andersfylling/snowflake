@@ -34,28 +34,10 @@ if you want the Snowflake.Date() method to parse snowflakes based on the twitter
 ### Benchmarks
 
 ```markdown
-BenchmarkUnmarshalJSON/string-4            	40553596	        27.8 ns/op
-BenchmarkUnmarshalJSON/uint64-a-4          	195255220	        5.90 ns/op
-BenchmarkUnmarshalJSON/uint64-b-4          	10915821	        92.0 ns/op
-
-BenchmarkUnmarshalJSON/string-struct-4     	 1363028	       784 ns/op
-BenchmarkUnmarshalJSON/snowflake-struct-4  	 1645940	       757 ns/op
-
-BenchmarkUnmarshal_snowflakeStrategies/dereference-4         	59154159	        22.4 ns/op
-BenchmarkUnmarshal_snowflakeStrategies/tmp-var-4             	72053302	        18.2 ns/op
+name                              time/op
+UnmarshalJSON/string-8            52.5ns ±14%
+UnmarshalJSON/snowflake-8         23.0ns ± 6%
+UnmarshalJSON/string-struct-8     1.23µs ± 5%
+UnmarshalJSON/snowflake-struct-8  1.15µs ±10%
+NullCheck/string-8                0.58ns ± 8%
 ```
-In the first 3 tests, I test out the convertion strategy directly.
-
- 1. string: byte slice is copied by calling `dst = string(src)`
- 2. uint64-a: a custom converted (loop) is used
- 3. uint64-b: strconv.ParseUint is used
-
-In the next 2 tests, I call json.Unmarshal to see how it will perform in real life.
-
- 4. a struct with `ID string 'json:"snowflake"'`
- 5. a struct with `ID Snowflake 'json:"snowflake"'`, which utilises the custom loop found in #2
-
-These last tests simply regards optimazations of the current custom loop, just as removing dereference. (The UnmarshalJSON method is called here which is why it slower than #2).
-
- 6. using dereference to update the snowflake during loop
- 7. using a local var during the loop, then updating the snowflake when finishing with no error
