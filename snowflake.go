@@ -1,7 +1,6 @@
 package snowflake
 
 import (
-	"errors"
 	"strconv"
 	"time"
 )
@@ -21,12 +20,6 @@ type Snowflake uint64
 
 type ID = Snowflake
 
-// JSON can be useful when sending the snowflake Snowflake by a json API
-type SnowflakeJSON struct {
-	ID    Snowflake `json:"id"`
-	IDStr string    `json:"id_str"`
-}
-
 // IsZero since snowflake exists of several parts, including a timestamp,
 //       I assume a valid snowflake Snowflake is never 0.
 func (s Snowflake) IsZero() bool {
@@ -36,16 +29,6 @@ func (s Snowflake) IsZero() bool {
 // Valid makes sure the snowflake is after the fixed epoch
 func (s Snowflake) Valid() bool {
 	return (s >> 22) >= 1 // older than 1 millisecond
-}
-
-// JSONStruct returns a struct that can be embedded in other structs.
-//            This is useful if you have a API server, since js can't parse uint64.
-//            Therefore there must a snowflake Snowflake string.
-func (s Snowflake) JSONStruct() *SnowflakeJSON {
-	return &SnowflakeJSON{
-		ID:    s,
-		IDStr: `"` + s.String() + `"`,
-	}
 }
 
 // String returns the decimal representation of the snowflake Snowflake.
@@ -81,52 +64,68 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	*s = 0
 	length := len(data)
-	if length == 0 || (length == 1 && data[0] == '0') {
-		// could assume that if first byte is '0' then there wont be any more
+	if length == 0 {
+		// Blank value.
 		return
 	}
-
-	// "id":null <- valid null
-	// "id":"null" <- not a null
-	// no need to check for the entire null word: if the first is a letter, we can't parse it anyways.
-	// and since null, is never used in a string, "null", we can safely assume the n is the start of a null.
-	if length < 6 && data[0] == 'n' {
+	if length == 4 && string(data) == "null" {
+		// This is a zero value.
 		return
 	}
-
-	// if the snowflake is passed as a string, we account for the double quote wrap
-	start := 0
 	if data[0] == '"' {
-		start++
-		length--
-	}
-	if signed := data[1] == '-' || data[0] == '-'; signed {
-		start++
-		*s |= 1 << 63
-	}
-
-	var c byte
-	var tmp uint64
-	for i := start; i < length; i++ {
-		c = data[i] - '0'
-		if c < 0 || c > 9 {
-			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
+		if length == 1 {
+			// This can't be anything.
 			return
 		}
-		tmp = tmp*10 + uint64(c)
+		dataRemainder := make([]byte, 0, length - 2)
+		if data[1] == '-' {
+			// Negative value.
+			*s |= 1 << 63
+		} else {
+			// Handle the first byte.
+			dataRemainder = append(dataRemainder, data[1])
+		}
+		for i := 2; i < length; i++ {
+			switch x := data[i]; x {
+			case '"':
+				// End of string.
+				break
+			default:
+				// Add to remainder.
+				dataRemainder = append(dataRemainder, x)
+			}
+		}
+		x, err := ParseSnowflakeUint(string(dataRemainder), 10)
+		if err != nil {
+			return err
+		}
+		*s |= x
+	} else {
+		// Take the yolo strategy and try and parse un-compliant JSON.
+		var dataRemainder []byte
+		if data[0] == '-' {
+			// Negative value.
+			dataRemainder = []byte{}
+			*s |= 1 << 63
+		} else {
+			// Start of value.
+			dataRemainder = []byte{data[0]}
+		}
+		dataRemainder = append(dataRemainder, data[1:]...)
+		x, err := ParseSnowflakeUint(string(dataRemainder), 10)
+		if err != nil {
+			return err
+		}
+		*s |= x
 	}
-
-	*s |= Snowflake(tmp)
 	return
 }
 
 func (s Snowflake) MarshalJSON() (data []byte, err error) {
-	// expect to have both "id" and "id_str"
-	// but this can't be done, so the SnowflakeJSON type is provided as an alternative.
 	if s == 0 {
 		data = []byte(`null`)
 	} else {
-		data = []byte(s.String())
+		data = []byte(`"` + s.String() + `"`)
 	}
 	return
 }
