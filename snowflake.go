@@ -1,6 +1,7 @@
 package snowflake
 
 import (
+	"errors"
 	"strconv"
 	"time"
 )
@@ -72,52 +73,58 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 		// This is a zero value.
 		return
 	}
+	dataRemainder := Snowflake(0)
+	var c uint8
+	addChar := func() error {
+		c -= '0'
+		if c < 0 || c > 9 {
+			return errors.New("cannot parse non-integer symbol:" + string(data[1]))
+		}
+		dataRemainder = dataRemainder*10 + Snowflake(c)
+		return nil
+	}
 	if data[0] == '"' {
 		if length == 1 {
 			// This can't be anything.
 			return
 		}
-		dataRemainder := make([]byte, 0, length - 2)
-		if data[1] == '-' {
+		if c = data[1]; c == '-' {
 			// Negative value.
 			*s |= 1 << 63
 		} else {
 			// Handle the first byte.
-			dataRemainder = append(dataRemainder, data[1])
+			if err = addChar(); err != nil {
+				return
+			}
 		}
 		for i := 2; i < length; i++ {
-			switch x := data[i]; x {
+			switch c = data[i]; c {
 			case '"':
 				// End of string.
 				break
 			default:
 				// Add to remainder.
-				dataRemainder = append(dataRemainder, x)
+				if err = addChar(); err != nil {
+					return
+				}
 			}
 		}
-		x, err := ParseSnowflakeUint(string(dataRemainder), 10)
-		if err != nil {
-			return err
-		}
-		*s |= x
 	} else {
 		// Take the yolo strategy and try and parse un-compliant JSON.
-		var dataRemainder []byte
-		if data[0] == '-' {
+		var index int
+		if c = data[0]; c == '-' {
 			// Negative value.
-			dataRemainder = []byte{}
 			*s |= 1 << 63
-		} else {
-			// Start of value.
-			dataRemainder = []byte{data[0]}
+			index++
 		}
-		dataRemainder = append(dataRemainder, data[1:]...)
-		x, err := ParseSnowflakeUint(string(dataRemainder), 10)
-		if err != nil {
-			return err
+		for ; index < length; index++ {
+			c = data[index]
+			if err = addChar(); err != nil {
+				return
+			}
 		}
-		*s |= x
 	}
+	*s |= dataRemainder
 	return
 }
 
