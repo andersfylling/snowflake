@@ -187,7 +187,7 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		{598360703000, []byte(`{"id":"0598360703000"}`)},
 		{0, []byte(`{"id":null}`)},
 		{0, []byte(`{"id":0}`)},
-		{(1<<63)|1, []byte(`{"id":-1}`)},
+		{(1 << 63) | 1, []byte(`{"id":-1}`)},
 		{0, []byte(`{"id":"0"}`)},
 		{10, []byte(`{"id":10}`)},
 	}
