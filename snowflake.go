@@ -81,7 +81,8 @@ func (s *Snowflake) UnmarshalBinary(text []byte) (err error) {
 func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 	*s = 0
 	length := len(data)
-	if length == 0 {
+	if length == 0 || (length == 1 && data[0] == '0') {
+		// could assume that if first byte is '0' then there wont be any more
 		return
 	}
 

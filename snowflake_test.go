@@ -186,6 +186,8 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		{24795873495, []byte(`{"id":"024795873495"}`)},
 		{598360703000, []byte(`{"id":"0598360703000"}`)},
 		{0, []byte(`{"id":null}`)},
+		{0, []byte(`{"id":0}`)},
+		{10, []byte(`{"id":10}`)},
 	}
 
 	type Foo struct {
