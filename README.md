@@ -11,7 +11,7 @@ Usage:
 >Note: if you are against dot imports, which I can understand, instead of writing snowflake.Snowflake, you can write snowflake.ID. ID is just an alias for Snowflake.
 
 ```go
-import . "github.com/andersfylling/snowflake"
+import . "github.com/andersfylling/snowflake/v5"
 
 type DiscordRole struct {
     ID          Snowflake    `json:"id"`

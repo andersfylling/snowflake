@@ -3,8 +3,6 @@ package snowflake
 import (
 	"encoding"
 	"encoding/json"
-	"errors"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -14,6 +12,11 @@ func TestSnowflake_Date(t *testing.T) {
 	a := s.DateByEpoch(EpochDiscord)
 	if a.Sub(time.Unix(int64(EpochDiscord), 0)) != 0 {
 		t.Error("expected Date subtracted the epoch to be 0")
+	}
+
+	s = NewSnowflake(228846961774559232)
+	if s.Date().Unix() != 1474631767 {
+		t.Error("date is incorrect")
 	}
 }
 
@@ -48,10 +51,14 @@ func TestString(t *testing.T) {
 	}
 }
 
-func TestEmpty(t *testing.T) {
-	id := NewSnowflake(0)
+func TestSnowflake_IsZero(t *testing.T) {
+	id := Snowflake(0)
 	if !id.IsZero() {
-		t.Errorf("Expects ID to be viewed as empty when value is 0")
+		t.Errorf("snowflake should be considered empty when value is 0")
+	}
+	id = Snowflake(1)
+	if id.IsZero() {
+		t.Errorf("snowflake should contain data")
 	}
 }
 
@@ -136,40 +143,12 @@ func TestJSONMarshalling(t *testing.T) {
 	}
 }
 
-func TestDate(t *testing.T) {
-	s := NewSnowflake(228846961774559232)
-	if s.Date().Unix() != 1474631767 {
-		t.Error("date is incorrect")
-	}
-}
-
 type testSet struct {
 	result uint64
 	data   []byte
 }
 
 func TestSnowflake_UnmarshalJSON(t *testing.T) {
-	// make sure it works on negative numbers
-	signedIntJSON1 := []byte("\"-1\"")
-	signedIntJSON2 := []byte("-1")
-	var s Snowflake
-	if err := json.Unmarshal(signedIntJSON1, &s); err != nil {
-		t.Error(err)
-	}
-	if s != Snowflake((1<<63)|1) {
-		t.Error("did not handle signed int")
-	}
-	if err := json.Unmarshal(signedIntJSON2, &s); err != nil {
-		t.Error(err)
-	}
-	if s != Snowflake((1<<63)|1) {
-		t.Error("did not handle signed int")
-	}
-
-	if _, ok := interface{}((*Snowflake)(nil)).(json.Unmarshaler); !ok {
-		t.Error("does not implement json.Unmarshaler")
-	}
-
 	data := []testSet{
 		{8994537984753, []byte(`{"id":"8994537984753"}`)},
 		{4573485, []byte(`{"id":"4573485"}`)},
@@ -183,6 +162,7 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		{598360703000, []byte(`{"id":"0598360703000"}`)},
 		{0, []byte(`{"id":null}`)},
 		{0, []byte(`{"id":0}`)},
+		{1, []byte(`{"id":1}`)},
 		{(1 << 63) | 1, []byte(`{"id":-1}`)},
 		{0, []byte(`{"id":"0"}`)},
 		{10, []byte(`{"id":10}`)},
@@ -236,6 +216,7 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		length := len(dataSets)
 		for n := 0; n < b.N; n++ {
 			result = string(dataSets[i])
+			i++
 			if i == length {
 				i = 0
 			}
@@ -243,38 +224,18 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 		if result == "" {
 		}
 	})
-	b.Run("uint64-a", func(b *testing.B) {
-		var result uint64
-		var i int
-		lengthi := len(dataSets)
-		for n := 0; n < b.N; n++ {
-			data := dataSets[i]
-			result = 0
-			length := len(data) - 1
-			for j := 1; j < length; j++ {
-				result = result*10 + uint64(data[j]-'0')
-			}
-			if i == lengthi {
-				i = 0
-			}
-		}
-		if result == 0 {
-		}
-	})
-	b.Run("uint64-b", func(b *testing.B) {
-		var result uint64
+	b.Run("snowflake", func(b *testing.B) {
+		var s Snowflake
 		var i int
 		length := len(dataSets)
 		for n := 0; n < b.N; n++ {
-			data := dataSets[i]
-			var tmp uint64
-			tmp, _ = strconv.ParseUint(string(data), 10, 64)
-			result = uint64(tmp)
+			if err := s.UnmarshalJSON(dataSets[i]); err != nil {
+				b.Error(err)
+			}
+			i++
 			if i == length {
 				i = 0
 			}
-		}
-		if result == 0 {
 		}
 	})
 	type fooOld struct {
@@ -321,111 +282,6 @@ func BenchmarkUnmarshalJSON(b *testing.B) {
 	})
 }
 
-type snowflakeA uint64
-
-func (s *snowflakeA) UnmarshalJSON(data []byte) (err error) {
-	*s = 0
-	length := len(data) - 1
-	if length == -1 {
-		return
-	}
-
-	// "id":null
-	// length - 1, remember
-	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
-		return
-	}
-	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
-		return
-	}
-
-	var c byte
-	for i := 1; i < length; i++ {
-		c = data[i] - '0'
-		if c < 0 || c > 9 {
-			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
-			return
-		}
-		*s = *s*10 + snowflakeA(c)
-	}
-	return
-}
-
-type snowflakeB uint64
-
-func (s *snowflakeB) UnmarshalJSON(data []byte) (err error) {
-	*s = 0
-	length := len(data) - 1
-	if length == -1 {
-		return
-	}
-
-	// "id":null
-	// length - 1, remember
-	if length == 3 && data[0] == 'n' && data[1] == 'u' && data[2] == 'l' && data[3] == 'l' {
-		return
-	}
-	if length == 5 && data[1] == 'n' && data[2] == 'u' && data[3] == 'l' && data[4] == 'l' {
-		return
-	}
-
-	var c byte
-	var tmp uint64
-	for i := 1; i < length; i++ {
-		c = data[i] - '0'
-		if c < 0 || c > 9 {
-			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
-			return
-		}
-		tmp = tmp*10 + uint64(c)
-	}
-
-	*s = snowflakeB(tmp)
-	return
-}
-
-func BenchmarkUnmarshal_snowflakeStrategies(b *testing.B) {
-	dataSet := [][]byte{
-		[]byte("\"8994537984753\""),
-		[]byte("\"4573485\""),
-		[]byte("\"00002349872349\""),
-		[]byte("\"435453\""),
-		[]byte("\"4987598525434463\""),
-		[]byte("\"059823042\""),
-		[]byte("\"698734534634\""),
-		[]byte("\"024795873495\""),
-		[]byte("\"0598360703000\""),
-	}
-	b.Run("dereference", func(b *testing.B) {
-		length := len(dataSet)
-		s := snowflakeA(0)
-		i := 0
-		for n := 0; n < b.N; n++ {
-			s.UnmarshalJSON(dataSet[i])
-			i++
-			if i == length {
-				i = 0
-			}
-		}
-		if s == 0 {
-		}
-	})
-	b.Run("tmp-var", func(b *testing.B) {
-		length := len(dataSet)
-		s := snowflakeB(0)
-		i := 0
-		for n := 0; n < b.N; n++ {
-			s.UnmarshalJSON(dataSet[i])
-			i++
-			if i == length {
-				i = 0
-			}
-		}
-		if s == 0 {
-		}
-	})
-}
-
 var sink_nullcheck bool
 var sink_nullcheck2 bool
 var sink_nullcheck3 bool
@@ -446,6 +302,13 @@ func BenchmarkNullCheck(b *testing.B) {
 		start := 0
 		for n := 0; n < b.N; n++ {
 			sink_nullcheck2 = length < 6 && data[start] == 'n' && data[start+1] == 'u' && data[start+2] == 'l' && data[start+3] == 'l'
+		}
+	})
+	b.Run("string", func(b *testing.B) {
+		data := []byte(`null`)
+		length := len(data)
+		for n := 0; n < b.N; n++ {
+			sink_nullcheck3 = length == 4 && string(data) == "null"
 		}
 	})
 	b.Run("assuming", func(b *testing.B) {
