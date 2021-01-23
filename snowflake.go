@@ -73,50 +73,30 @@ func (s *Snowflake) UnmarshalJSON(data []byte) (err error) {
 		// This is a zero value.
 		return
 	}
-	dataRemainder := Snowflake(0)
-	var c uint8
+
+	// if the snowflake is passed as a string, we account for the double quote wrap
+	start := 0
 	if data[0] == '"' {
-		if length == 1 {
-			// This can't be anything.
+		start++
+		length--
+	}
+	if signed := data[start] == '-'; signed {
+		start++
+		*s |= 1 << 63
+	}
+
+	var c byte
+	var tmp uint64
+	for i := start; i < length; i++ {
+		c = data[i] - '0'
+		if c < 0 || c > 9 {
+			err = errors.New("cannot parse non-integer symbol:" + string(data[i]))
 			return
 		}
-		index := 1
-		if c = data[1]; c == '-' {
-			// Negative value.
-			*s |= 1 << 63
-			index++
-		}
-		for i := index; i < length; i++ {
-			switch c = data[i]; c {
-			case '"':
-				// End of string.
-				break
-			default:
-				// Add to remainder.
-				c -= '0'
-				if c < 0 || c > 9 {
-					return errors.New("cannot parse non-integer symbol:" + string(data[i]))
-				}
-				dataRemainder = dataRemainder*10 + Snowflake(c)
-			}
-		}
-	} else {
-		// Take the yolo strategy and try and parse un-compliant JSON.
-		var index int
-		if c = data[0]; c == '-' {
-			// Negative value.
-			*s |= 1 << 63
-			index++
-		}
-		for i := index; i < length; i++ {
-			c = data[i] - '0'
-			if c < 0 || c > 9 {
-				return errors.New("cannot parse non-integer symbol:" + string(data[i]))
-			}
-			dataRemainder = dataRemainder*10 + Snowflake(c)
-		}
+		tmp = tmp*10 + uint64(c)
 	}
-	*s |= dataRemainder
+
+	*s |= Snowflake(tmp)
 	return
 }
 
