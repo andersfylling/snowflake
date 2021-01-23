@@ -2,6 +2,7 @@ package snowflake
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ import (
 func ParseSnowflakeString(v string) Snowflake {
 	id, err := ParseSnowflakeUint(v, 10)
 	if err != nil {
-		panic(err) // TODO
+		panic(fmt.Errorf("unable to parse %s into snowflake", v)) // TODO
 	}
 	return id
 }

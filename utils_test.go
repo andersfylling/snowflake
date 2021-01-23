@@ -1,12 +1,15 @@
 package snowflake
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestParseSnowflakeString(t *testing.T) {
 	// test panic
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("ParseID did panic")
+			t.Error(r)
 		}
 	}()
 
@@ -14,6 +17,9 @@ func TestParseSnowflakeString(t *testing.T) {
 	if ParseSnowflakeString(id).String() != id {
 		t.Errorf("Incorrect string parsing for ID, base 10. Wants %s, got %s", id, ParseSnowflakeString(id).String())
 	}
+	ParseSnowflakeString("11")
+	ParseSnowflakeString("0")
+	ParseSnowflakeString("")
 }
 
 func TestParseSnowflakeStringWithPanicTriggerLetters(t *testing.T) {
@@ -45,16 +51,25 @@ func TestParseSnowflakeStringWithPanicTriggerOverflow(t *testing.T) {
 }
 
 func TestGetSnowflake(t *testing.T) {
-	v1 := "123123123"
-	s, err := GetSnowflake(v1)
-	if err != nil || s.String() != v1 {
-		t.Error("cannot parse string")
+	data := []interface{}{
+		"348563",
+		int(2345),
+		int(-2345),
+		uint(8345),
+		int8(1),
+		int16(1),
+		int32(1),
+		int64(1),
+		uint8(1),
+		uint16(1),
+		uint32(1),
+		uint64(1),
 	}
-
-	v2 := 123123123
-	s2, err := GetSnowflake(v2)
-	if err != nil || int(s2) != v2 {
-		t.Error("cannot parse int")
+	for _, v := range data {
+		s, err := GetSnowflake(v)
+		if err != nil || s.IsZero() {
+			t.Error("cannot parse", reflect.TypeOf(v).Name(), "of value", v)
+		}
 	}
 
 }
