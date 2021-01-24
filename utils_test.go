@@ -72,4 +72,12 @@ func TestGetSnowflake(t *testing.T) {
 		}
 	}
 
+	type unknown struct {}
+	s, err := GetSnowflake(unknown{})
+	if s != 0 {
+		t.Error("snowflake should not have a value")
+	}
+	if err == nil {
+		t.Error("should fail to process a unknown type")
+	}
 }
