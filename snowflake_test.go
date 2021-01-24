@@ -9,9 +9,9 @@ import (
 
 func TestSnowflake_Date(t *testing.T) {
 	s := Snowflake(0)
-	a := s.DateByEpoch(EpochDiscord)
-	if a.Sub(time.Unix(int64(EpochDiscord), 0)) != 0 {
-		t.Error("expected Date subtracted the epoch to be 0")
+	a := s.Date()
+	if diff := a.Sub(time.Unix(int64(EpochDiscord)/1000, 0)); diff != 0 {
+		t.Error("expected Date subtracted the epoch to be 0. Got ", diff)
 	}
 
 	s = NewSnowflake(228846961774559232)

@@ -27,10 +27,6 @@ type DiscordRole struct {
 
 If you're creating an API that sends JSON, the snowflake will automatically be converted to/from a string for you.
 
-### Build constraints
-if you want the Snowflake.Date() method to parse snowflakes based on the twitter epoch, you can do `go build -tags=snowflake_twitter`. The default behaviour will use the Discord epoch.
-
-
 ### Benchmarks
 
 ```markdown

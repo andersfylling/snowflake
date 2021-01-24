@@ -8,7 +8,6 @@ import (
 
 const (
 	EpochDiscord uint64 = 1420070400000
-	EpochTwitter uint64 = 1288834974657
 )
 
 // NewID creates a new Snowflake Snowflake from a uint64.
@@ -126,7 +125,7 @@ func (s *Snowflake) UnmarshalText(text []byte) (err error) {
 	return
 }
 
-func (s Snowflake) DateByEpoch(epoch uint64) time.Time {
-	date := (uint64(s) >> uint64(22)) + epoch
-	return time.Unix(int64(date), 0)
+func (s Snowflake) Date() time.Time {
+	epoch := (uint64(s) >> uint64(22)) + EpochDiscord
+	return time.Unix(int64(epoch)/1000, 0)
 }
