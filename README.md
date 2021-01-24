@@ -3,7 +3,7 @@
 
 > This lib supports signed numbers, but will convert them to uint64.
 
-Does not hold functionality to connect a snowflake service, nor generating snowflakes. But rather parsing the snowflakes from JSON only. The default behaviour is to parse Discord snowflakes, but build constraints exists to handle twitter snowflakes as well. Note that there also exist `DateByEpoch` to which you can pass any desired epoch to affect the date parsing.
+Does not hold functionality to connect a snowflake service, nor generating snowflakes. But supports parsing snowflakes sent by Discord (both integer and string), and renders zero value as "null" and higher values as a string version to comply with Discord.
 
 For module usage you must utilise the suffix found in the go.mod file (/v2 for v2.x.x releases, /v3 for v3.x.x releases, etc.).
 
