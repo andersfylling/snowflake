@@ -1,3 +1,3 @@
-module github.com/andersfylling/snowflake/v4
+module github.com/andersfylling/snowflake/v5
 
 go 1.13
