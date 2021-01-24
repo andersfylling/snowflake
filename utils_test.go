@@ -64,7 +64,7 @@ func TestGetSnowflake(t *testing.T) {
 		uint16(1),
 		uint32(1),
 		uint64(1),
-		Snowflake(0),
+		Snowflake(3),
 		Snowflake(246),
 	}
 	for _, v := range data {
